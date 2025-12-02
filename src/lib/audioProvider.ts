@@ -142,12 +142,12 @@ async function generateWithElevenLabs(request: GenerateSoundRequestBody): Promis
 
   const endpoint = "https://api.elevenlabs.io/v1/sound-generation";
   const durationSeconds = Math.max(0.5, Math.min(22, request.parameters.lengthSeconds ?? 10));
-  const outputFormat = process.env.ELEVENLABS_OUTPUT_FORMAT ?? "mp3_44100_128";
+  const outputFormat = process.env.ELEVENLABS_OUTPUT_FORMAT ?? "pcm_48000";
 
   const body = {
     text: request.prompt,
     duration_seconds: durationSeconds,
-    prompt_influence: 0.3,
+    prompt_influence: 0.5,
   };
 
   const url = new URL(endpoint);
@@ -170,7 +170,15 @@ async function generateWithElevenLabs(request: GenerateSoundRequestBody): Promis
   const audioBuffer = await response.arrayBuffer();
   const audioBase64 = Buffer.from(audioBuffer).toString("base64");
 
-  const mime = outputFormat.startsWith("mp3") ? "audio/mpeg" : "audio/wav";
+  let mime = "audio/wav";
+  if (outputFormat.startsWith("mp3")) {
+    mime = "audio/mpeg";
+  } else if (outputFormat.startsWith("opus")) {
+    mime = "audio/opus";
+  } else if (outputFormat.startsWith("pcm")) {
+    mime = "audio/wav";
+  }
+
   return { audioUrl: `data:${mime};base64,${audioBase64}` };
 }
 
