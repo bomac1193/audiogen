@@ -142,7 +142,7 @@ async function generateWithElevenLabs(request: GenerateSoundRequestBody): Promis
 
   const endpoint = "https://api.elevenlabs.io/v1/sound-generation";
   const durationSeconds = Math.max(0.5, Math.min(22, request.parameters.lengthSeconds ?? 10));
-  const outputFormat = process.env.ELEVENLABS_OUTPUT_FORMAT ?? "pcm_48000";
+  const outputFormat = process.env.ELEVENLABS_OUTPUT_FORMAT ?? "mp3_44100_192";
 
   const body = {
     text: request.prompt,
