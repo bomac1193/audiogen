@@ -31,17 +31,66 @@ export function formatRelativeTimestamp(isoDate: string) {
   return RELATIVE_TIME.format(diffDays, "day");
 }
 
-const AUTO_NAMES = [
-  "Haunted Alley",
-  "Neon Pulse",
-  "Astral Echo",
-  "Ember Drift",
-  "Subsystem Bloom",
-  "Quantum Signal",
+const POWER_WORDS = [
+  "Epic",
+  "Massive",
+  "Dark",
+  "Heavy",
+  "Deep",
+  "Crisp",
+  "Lush",
+  "Raw",
+  "Pure",
+  "Ultra",
+  "Hyper",
+  "Infinite",
 ];
 
-export function generateSoundName(type: string, seed: number) {
-  const index = Math.abs(seed) % AUTO_NAMES.length;
-  const version = (Math.abs(seed) % 4) + 1;
-  return `${AUTO_NAMES[index]} ${type} v${version}`;
+const STOP_WORDS = new Set([
+  "a",
+  "an",
+  "the",
+  "with",
+  "and",
+  "or",
+  "in",
+  "on",
+  "at",
+  "to",
+  "for",
+  "of",
+  "is",
+  "are",
+  "was",
+  "were",
+]);
+
+export function generateSoundName(prompt: string): string {
+  // Extract important words (nouns, adjectives, descriptors)
+  const words = prompt
+    .toLowerCase()
+    .replace(/[^\w\s]/g, "")
+    .split(/\s+/)
+    .filter((word) => word.length > 2 && !STOP_WORDS.has(word));
+
+  // If we have 1-2 words, use them directly with title case
+  if (words.length <= 2) {
+    return words.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+  }
+
+  // For longer prompts, extract key terms
+  const keyWords = words.slice(0, 3);
+
+  // Add a power word occasionally for SEO hook
+  const usePowerWord = Math.random() > 0.6;
+  if (usePowerWord && keyWords.length >= 2) {
+    const powerWord = POWER_WORDS[Math.floor(Math.random() * POWER_WORDS.length)];
+    keyWords.unshift(powerWord);
+  }
+
+  // Capitalize and join (max 3-4 words for SEO)
+  return keyWords
+    .slice(0, 3)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
 }
