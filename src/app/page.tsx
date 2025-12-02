@@ -7,7 +7,6 @@ import { ToastItem, ToastStack } from "@/components/toast-stack";
 import { WaveformPlaceholder } from "@/components/waveform-placeholder";
 import { AudioPlayerControls } from "@/components/audio-player-controls";
 import type { SoundGeneration } from "@/types";
-import { generateSoundName } from "@/lib/utils";
 
 const PROMPT_SUGGESTIONS = [
   "Glitchy UI clicks in a neon-lit cybercafe",
@@ -59,7 +58,7 @@ export default function Home() {
     const requestParameters = { ...DEFAULT_PARAMETERS, seed: seedValue };
     const pendingSound: SoundGeneration = {
       id: crypto.randomUUID(),
-      name: generateSoundName(DEFAULT_PARAMETERS.type, seedValue),
+      name: trimmedPrompt,
       prompt: trimmedPrompt,
       createdAt: new Date().toISOString(),
       audioUrl: null,
