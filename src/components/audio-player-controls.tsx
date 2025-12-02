@@ -60,13 +60,15 @@ useEffect(() => {
 }, [blobUrl]);
 
   const togglePlay = useCallback(() => {
-    if (!audioRef.current || !audioUrl) return;
+    if (!audioRef.current || !blobUrl) return;
     if (isPlaying) {
       audioRef.current.pause();
     } else {
-      audioRef.current.play();
+      audioRef.current.play().catch((error) => {
+        console.error('Failed to play audio:', error);
+      });
     }
-  }, [isPlaying, audioUrl]);
+  }, [isPlaying, blobUrl]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -80,8 +82,14 @@ useEffect(() => {
       setIsPlaying(false);
       if (loop) {
         audio.currentTime = 0;
-        audio.play();
+        audio.play().catch((error) => {
+          console.error('Failed to loop audio:', error);
+        });
       }
+    };
+    const handleError = (e: Event) => {
+      console.error('Audio error:', e);
+      setIsPlaying(false);
     };
 
     audio.addEventListener("play", handlePlay);
@@ -89,6 +97,7 @@ useEffect(() => {
     audio.addEventListener("loadedmetadata", handleLoaded);
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("ended", handleEnded);
+    audio.addEventListener("error", handleError);
 
     return () => {
       audio.removeEventListener("play", handlePlay);
@@ -96,6 +105,7 @@ useEffect(() => {
       audio.removeEventListener("loadedmetadata", handleLoaded);
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("ended", handleEnded);
+      audio.removeEventListener("error", handleError);
     };
   }, [loop]);
 
