@@ -14,6 +14,7 @@ export function AudioPlayerControls({ audioUrl, disabled }: AudioPlayerControlsP
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [loop, setLoop] = useState(false);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
 
 useEffect(() => {
   const audio = audioRef.current;
@@ -24,11 +25,39 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
+  // Convert data URL to Blob URL for better browser support
+  if (audioUrl && audioUrl.startsWith('data:')) {
+    const [header, base64Data] = audioUrl.split(',');
+    const mimeType = header.match(/:(.*?);/)?.[1] || 'audio/wav';
+
+    try {
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      setBlobUrl(url);
+
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    } catch (error) {
+      console.error('Failed to convert data URL to Blob:', error);
+      setBlobUrl(null);
+    }
+  } else {
+    setBlobUrl(audioUrl);
+  }
+}, [audioUrl]);
+
+useEffect(() => {
   const audio = audioRef.current;
   if (!audio) return;
   audio.pause();
   audio.currentTime = 0;
-}, [audioUrl]);
+}, [blobUrl]);
 
   const togglePlay = useCallback(() => {
     if (!audioRef.current || !audioUrl) return;
@@ -130,7 +159,7 @@ useEffect(() => {
         </button>
       </div>
 
-      <audio ref={audioRef} src={audioUrl ?? undefined} preload="metadata" loop={loop} hidden />
+      <audio ref={audioRef} src={blobUrl ?? undefined} preload="metadata" loop={loop} hidden />
     </div>
   );
 }
